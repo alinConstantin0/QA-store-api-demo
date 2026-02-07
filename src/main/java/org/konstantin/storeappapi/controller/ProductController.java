@@ -4,9 +4,14 @@ import org.konstantin.storeappapi.dto.ProductCreateRequest;
 import org.konstantin.storeappapi.dto.UpdateStockRequest;
 import org.konstantin.storeappapi.model.Product;
 import org.konstantin.storeappapi.service.StoreService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
 public class ProductController {
@@ -29,10 +34,11 @@ public class ProductController {
 
     @GetMapping("/products/{name}")                 // get product by name
     public Product getProdByName(@PathVariable String name) {     //path variable trimite name din URL in variabila metodei
-        if (name == null) {
-            throw new IllegalArgumentException("Not found");
+        Product found = storeService.findByName(name);
+        if (found == null || found.getName().isBlank()) {
+            throw new ResponseStatusException(NOT_FOUND,"Not found");
         }
-        return storeService.findByName(name);
+        return found;
     }
 
     @DeleteMapping("/products/{name}")
@@ -47,7 +53,7 @@ public class ProductController {
     @PatchMapping("/products/{name}/req")
     public Product patchProdStock(@PathVariable String name, @RequestBody UpdateStockRequest req) {
         if (name == null) {
-            throw new IllegalArgumentException("Not found");
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
         storeService.findByName(name).setStock(req.getStock());
         return storeService.findByName(name);

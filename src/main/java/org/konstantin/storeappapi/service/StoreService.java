@@ -1,7 +1,9 @@
 package org.konstantin.storeappapi.service;
 
 import org.konstantin.storeappapi.model.Product;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +35,7 @@ public class StoreService {
 
     public void addProduct(Product p) {
         if (p == null) {                               // check sa nu fie invalid
-            throw new IllegalArgumentException("Product added cannot be null");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Product added cannot be null");
         }
         Product existing = findByName(p.getName());              //verificare daca exista deja sa nu facem dupe
         if (existing != null) {                                   // daca existing contine un produs, adaugam stocul
@@ -45,14 +47,14 @@ public class StoreService {
 
     public Product createProduct(String name, double price, int stock) {
         if (name.isBlank()) {
-            throw new IllegalArgumentException("Name required");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Name required");
         }
         if (price < 0 || stock < 0) {
-            throw new IllegalArgumentException("Price/Stock cannot be negative");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Price/Stock cannot be negative");
         }
         Product existing = findByName(name);
         if (existing != null) {
-            throw new IllegalStateException("Duplicate");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Duplicate");
         }
         Product input = new Product(name, price, stock);
         addProduct(input);
@@ -75,10 +77,10 @@ public class StoreService {
         {
             Product found = findByName(name);
             if (found == null || found.getName().isBlank()) {
-                throw new IllegalStateException("Name required");
+                throw new ResponseStatusException(HttpStatus.CONFLICT,"Name required");
             }
             if (newStock < 0) {
-                throw new IllegalArgumentException("Stock cannot be lower than 0");
+                throw new ResponseStatusException(HttpStatus.CONFLICT,"Stock cannot be lower than 0");
             }
             found.setStock(newStock);
             return found;
