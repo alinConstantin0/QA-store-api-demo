@@ -5,6 +5,7 @@ import org.konstantin.storeappapi.dto.UpdateStockRequest;
 import org.konstantin.storeappapi.model.Product;
 import org.konstantin.storeappapi.service.StoreService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,27 +36,23 @@ public class ProductController {
     @GetMapping("/products/{name}")                 // get product by name
     public Product getProdByName(@PathVariable String name) {     //path variable trimite name din URL in variabila metodei
         Product found = storeService.findByName(name);
-        if (found == null || found.getName().isBlank()) {
-            throw new ResponseStatusException(NOT_FOUND,"Not found");
+        if (found == null) {
+            throw new ResponseStatusException(NOT_FOUND, "Not found");
         }
         return found;
     }
 
-    @DeleteMapping("/products/{name}")
-    public String deleteByName(@PathVariable String name) {
-        if (storeService.deleteProductByName(name)) {
-            return "Deleted";
-        } else {
-            return "Not found";
+    @DeleteMapping("/products/{name}")                  // de corectat returnul, avem nev de status nu string
+    public ResponseEntity<Void> deleteByName(@PathVariable String name) {
+        boolean deleted = storeService.deleteProductByName(name);
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/products/{name}/req")
     public Product patchProdStock(@PathVariable String name, @RequestBody UpdateStockRequest req) {
-        if (name == null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
-        storeService.findByName(name).setStock(req.getStock());
-        return storeService.findByName(name);
+        return storeService.updateStock(name, req.getStock());
     }
 }

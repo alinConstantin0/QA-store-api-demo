@@ -34,41 +34,37 @@ public class StoreService {
     }
 
     public void addProduct(Product p) {
-        if (p == null) {                               // check sa nu fie invalid
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"Product added cannot be null");
+        if (p == null) {
+            throw new IllegalArgumentException("Product required");
         }
-        Product existing = findByName(p.getName());              //verificare daca exista deja sa nu facem dupe
-        if (existing != null) {                                   // daca existing contine un produs, adaugam stocul
-            existing.addStock(p.getStock());                     // produsului trimis de user peste stocul lui existing
-            return;
-        }
-        products.add(p);                                          // adaugam doar daca existing e null
+        products.add(p);
     }
 
     public Product createProduct(String name, double price, int stock) {
-        if (name.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"Name required");
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name required");
         }
         if (price < 0 || stock < 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"Price/Stock cannot be negative");
+            throw new IllegalArgumentException("Price/stock cannot be negative");
         }
         Product existing = findByName(name);
         if (existing != null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Duplicate");
+            throw new IllegalArgumentException("Duplicate");
         }
         Product input = new Product(name, price, stock);
         addProduct(input);
         return input;
     }
 
-    public Boolean deleteProductByName(String name) {   //Boolean for demo, usually EntityResponse-HTTPS status
+    public Boolean deleteProductByName(String name) {
         if (name == null || name.isBlank()) {
-            return false;
+            throw new IllegalArgumentException("Name required");
         }
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getName().equalsIgnoreCase(name))
-                products.remove(i);
-            return true;
+        for (Product p : products) {
+            if (p.getName().equalsIgnoreCase(name)) {
+                products.remove(p);
+                return true;
+            }
         }
         return false;
     }
@@ -77,10 +73,10 @@ public class StoreService {
         {
             Product found = findByName(name);
             if (found == null || found.getName().isBlank()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,"Name required");
+                throw new IllegalArgumentException("Name required");
             }
             if (newStock < 0) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,"Stock cannot be lower than 0");
+                throw new IllegalArgumentException("Stock cannot be negative");
             }
             found.setStock(newStock);
             return found;

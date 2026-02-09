@@ -2,7 +2,7 @@ package org.konstantin.storeappapi.model;
 
 public class Product {
     private final String name;
-    private final double price;
+    private double price;
     private int stock;
 
     public Product(String name, double price, int stock) {
@@ -27,23 +27,29 @@ public class Product {
         return stock;
     }
 
-
-    public void addStock(int amount) {
-        if (amount < 0) throw new IllegalArgumentException("Stock cannot be lower than 0");
-        stock += amount;
+    public void setPrice(double price) {
+        if (price < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+        this.price = price;
     }
 
     public void setStock(int newStock) {
         if (newStock < 0) {
-            throw new IllegalArgumentException("Stock cannot be lower than 0");
+            throw new IllegalArgumentException("Stock cannot be negative");
         }
 
         stock = newStock;
     }
 
-    public void delStock(int amount) {
+    public void addStock(int amount) {
+        if (amount < 0) throw new IllegalArgumentException("Amount cannot be negative");
+        stock += amount;
+    }
+
+    public void removeStock(int amount) {
         if (amount > stock) throw new IllegalArgumentException("Cannot remove more stock than there actually is");
-        if (amount < 0) throw new IllegalArgumentException("Amount removed cannot be lower than 0");
+        if (amount < 0) throw new IllegalArgumentException("Amount cannot be negative");
         stock -= amount;
     }
 
